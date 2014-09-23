@@ -28,7 +28,7 @@
 
 download() {
 	mkdir payload &> /dev/null
-	wget https://thecyberteknetwork.com/~ranndom/payload/script.sh &> /dev/null
+	wget https://raw.githubusercontent.com/Ranndom/Source-Start-Scripts/master/payload/script.sh &> /dev/null
 	mv script.sh payload/ &> /dev/null
 }
 
