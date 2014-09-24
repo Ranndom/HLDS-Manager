@@ -26,6 +26,32 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Ask yes or no.
+# Parameters:
+# 1: Question to ask.
+# 2: Command to run if yes.
+# 3: Command to run if no.
+ask_yes_or_no() {
+	read -p "${1}: " answer
+	answer=$(echo $answer | awk '{print tolower($0)}')
+
+	case ${answer} in
+		"yes")
+			# Run command 1
+			eval "${2}"
+			;;
+		"no")
+			# Run command 2
+			eval "${3}"
+			;;
+		*)
+			# Repeat function.
+			echo "Answer must be yes or no."
+			ask_yes_or_no "${1}" "${2}" "${3}"
+			;;
+	esac
+}
+
 download() {
 	mkdir payload &> /dev/null
 	wget https://raw.githubusercontent.com/Ranndom/Source-Start-Scripts/master/payload/script.sh &> /dev/null
@@ -84,57 +110,9 @@ install() {
 	} | tee "${install_location}" > /dev/null 2>&1
 	cat payload/script.sh | tee -a "${install_location}" > /dev/null 2>&1
 
-	delete_payload
+	ask_yes_or_no "Delete payload/ directory? (yes/no)" "rm payload -rf" "echo \"Not deleting.\""
+	ask_yes_or_no "Delete install.sh? (yes/no)" "rm install.sh -rf" "echo \"Not deleting.\""
 
-	#rm payload -rf
-
-}
-
-delete_payload() {
-	read -p "Delete payload/ directory? (yes/no): " delete_payload
-	delete_payload=$(echo $delete_payload | awk '{print tolower($0)}')
-
-	case ${delete_payload} in
-		"yes")
-			# delete payload directory
-			rm payload -rf
-			delete_script
-			;;
-		"no")
-			# do nothing
-			delete_script
-			;;
-		*)
-			# repeat function.
-			echo "Answer must be yes or no."
-			delete_payload
-			;;
-	esac
-}
-
-delete_script() {
-	read -p "Delete install.sh? (yes/no): " delete_script
-	delete_script=$(echo $delete_payload | awk '{print tolower($0)}')
-
-	case ${delete_script} in
-		"yes")
-			# delete payload directory
-			rm install.sh -rf
-			next
-			;;
-		"no")
-			# do nothing
-			next
-			;;
-		*)
-			# repeat function.
-			echo "Answer must be yes or no."
-			delete_script
-			;;
-	esac
-}
-
-next() {
 	chmod +x ${install_location}
 	echo " "
 	echo "Installation completed"
