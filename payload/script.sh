@@ -35,6 +35,33 @@ fn_fail(){
 	echo -e "\r\033[K[\e[0;31m FAIL \e[0;39m] $@"
 }
 
+# Ask yes or no.
+# Parameters:
+# 1: Question to ask.
+# 2: Command to run if yes.
+# 3: Command to run if no.
+ask_yes_or_no() {
+	read -p "${1}: " answer
+	answer=$(echo $answer | awk '{print tolower($0)}')
+
+	case ${answer} in
+		"yes")
+			# Run command 1
+			eval "${2}"
+			;;
+		"no")
+			# Run command 2
+			eval "${3}"
+			;;
+		*)
+			# Repeat function.
+			echo "Answer must be yes or no."
+			ask_yes_or_no "${1}" "${2}" "${3}"
+			;;
+	esac
+}
+
+
 start() {
 	tmuxwc=$(tmux list-sessions 2>&1|grep -v failed|grep -E "^${game_name}:"|wc -l)
 	if [ ${tmuxwc} -eq 1 ]; then
@@ -90,11 +117,39 @@ console() {
 install() {
 	# Run SteamCMD.
 
-	${steamcmd}/steamcmd.sh +login anonymous +force_install_dir ${srcds_location}/ +app_update ${appid} +quit
+	# commenting to prevent having to download the server when testing.
+	#${steamcmd}/steamcmd.sh +login anonymous +force_install_dir ${srcds_location}/ +app_update ${appid} +quit
 
 	clear
 	fn_okay "Installed/Updated server."
-	echo "Use $0 start to start the server."
+
+	echo " "
+	echo " SourceMod"
+	echo "==========="
+
+	ask_yes_or_no "Would you like to install MetaMod and SourceMod onto this server? (yes/no)" "install_sourcemod" "echo \"Use ${0} start to start the server.\""
+}
+
+install_sourcemod() {
+	read -p "Download location for MetaMod (eg. http://www.gsptalk.com/mirror/sourcemod/mmsource-1.10.3-linux.tar.gz): " metamod_download
+	read -p "Download location for SourceMod (eg. http://www.gsptalk.com/mirror/sourcemod/sourcemod-1.6.2-linux.tar.gz): " sourcemod_download
+	read -p "Game name (eg. tf, csgo): " game_name
+
+	wget ${metamod_download} -O metamod.tar.gz &> /dev/null
+	wget ${sourcemod_download} -O sourcemod.tar.gz &> /dev/null
+
+	fn_okay "Downloaded MetaMod and SourceMod."
+
+	tar -zxvf metamod.tar.gz &> /dev/null
+	tar -zxvf sourcemod.tar.gz &> /dev/null
+
+	rm metamod.tar.gz &> /dev/null
+	rm sourcemod.tar.gz &> /dev/null
+
+	cp addons/ cfg/ ${srcds_location}/${game_name}/ -rf
+	rm addons/ cfg/ -rf
+
+	fn_okay "Successfully installed MetaMod and SourceMod."
 }
 
 case $1 in

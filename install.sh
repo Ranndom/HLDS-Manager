@@ -26,6 +26,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Colours.
+GREEN="\e[32m"
+BLUE="\e[34m"
+BLACK="\e[30m"
+RESET="\e[0m"
+
 # Ask yes or no.
 # Parameters:
 # 1: Question to ask.
@@ -52,6 +58,35 @@ ask_yes_or_no() {
 	esac
 }
 
+start() {
+	if [ "${2}" == "local" ]; then
+		echo "Using local payload"
+	else
+		download
+	fi
+
+	collect_information
+}
+
+collect_information() {
+	# Ask for a bit of information
+	echo -ne "${BLUE}Game server name:${RESET} "
+	read server_name
+	echo -ne "${BLUE}Full path to install the server to (without the trailing slash):${RESET} "
+	read full_path
+	echo -ne "${BLUE}Start parameters:${RESET} "
+	read start_params
+	echo -ne "${BLUE}App ID of server:${RESET} "
+	read app_id
+	echo -ne "${BLUE}Full path to directory containing SteamCMD executable - will be downloaded if it doesn't exist (without the trailing slash):${RESET} "
+	read steamcmd_exec
+	echo -ne "${BLUE}Install location: $(pwd)/${RESET}"
+	read install_location
+	echo " "
+
+	install
+}
+
 download() {
 	mkdir payload &> /dev/null
 	wget https://raw.githubusercontent.com/Ranndom/Source-Start-Scripts/master/payload/script.sh &> /dev/null
@@ -59,13 +94,18 @@ download() {
 }
 
 install() {
-	# Ask for a bit of information
-	read -p "Game server name: " server_name
-	read -p "Full path to directory containing srcds_run (without the trailing slash): " full_path
-	read -p "Start parameters: " start_params
-	read -p "App ID of server: " app_id
-	read -p "Full path to directory containing SteamCMD executable (without the trailing slash): " steamcmd_exec
+	echo -e "${GREEN}Settings"
+	echo -e "${RESET}==============="
+	echo -e "${BLUE}Server Name:${RESET} ${server_name}"
+	echo -e "${BLUE}Server install location:${RESET} ${full_path}"
+	echo -e "${BLUE}Start parameters:${RESET} ${start_params}"
+	echo -e "${BLUE}App ID:${RESET} ${app_id}"
+	echo -e "${BLUE}SteamCMD:${RESET} ${steamcmd_exec}/steamcmd.sh"
+	echo -e "${BLUE}Install location:${RESET} ${install_location}"
+	echo -e "${RESET}==============="
 	echo " "
+
+	ask_yes_or_no "Are you sure these are correct? (yes/no)" "echo \"Continuing with setup...\"" "collect_information"
 
 	# Check if steamcmd exists.
 	if [ -f "${steamcmd_exec}/steamcmd.sh" ]; then
@@ -73,6 +113,7 @@ install() {
 		echo "Found SteamCMD, not redownloading."
 		echo " "
 	else
+		echo "SteamCMD not found, downloading now."
 		# Download it to current directory.
 		wget http://media.steampowered.com/installer/steamcmd_linux.tar.gz &> /dev/null
 
@@ -86,18 +127,6 @@ install() {
 		# Move files to the correct directory.
 		mv linux32/ steam.sh steamcmd.sh ${steamcmd_exec}
 	fi
-
-	echo "Settings"
-	echo "==============="
-	echo "Server Name: ${server_name}"
-	echo "SRCDS Run: ${full_path}"
-	echo "Start parameters: ${start_params}"
-	echo "App ID: ${app_id}"
-	echo "SteamCMD: ${steamcmd_exec}/steamcmd.sh"
-	echo "==============="
-	echo " "
-
-	read -p "Install location: $(pwd)/" install_location
 
 	touch "${install_location}"
 	{
@@ -123,12 +152,7 @@ install() {
 
 case $1 in
 	install)
-		if [ "${2}" == "local" ]; then
-			echo "Using local payload"
-		else
-			download
-		fi
-		install
+		start
 		;;
 	*)
 		echo "Usage: $0 (install)"
