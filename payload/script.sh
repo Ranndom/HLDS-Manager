@@ -116,9 +116,7 @@ console() {
 
 install() {
 	# Run SteamCMD.
-
-	# commenting to prevent having to download the server when testing.
-	#${steamcmd}/steamcmd.sh +login anonymous +force_install_dir ${srcds_location}/ +app_update ${appid} +quit
+	${steamcmd}/steamcmd.sh +login anonymous +force_install_dir ${srcds_location}/ +app_update ${appid} +quit
 
 	clear
 	fn_okay "Installed/Updated server."
