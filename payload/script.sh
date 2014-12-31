@@ -26,12 +26,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # [  OK  ]
-fn_okay(){
+fn_okay() {
     echo -e "\r\033[K[\e[0;32m  OK  \e[0;39m] $@"
 }
 
 # [ FAIL ]
-fn_fail(){
+fn_fail() {
 	echo -e "\r\033[K[\e[0;31m FAIL \e[0;39m] $@"
 }
 
@@ -81,6 +81,8 @@ stop() {
 		fn_okay "Stopping ${game_name}."
 		sleep 1
 		tmux send-keys -t ${game_name} "quit" ENTER
+		sleep 5
+		tmux send-keys -t ${game_name} ^C
 	fi
 }
 
@@ -106,8 +108,6 @@ console() {
 	tmuxwc=$(tmux list-sessions 2>&1|grep -v failed|grep -E "^${game_name}:"|wc -l)
 	if [ ${tmuxwc} -eq 1 ]; then
 		fn_okay "Attaching to ${game_name}."
-		echo "To detach from the console, press Ctrl + B and then D, DO NOT PRESS Ctrl + C under any circumstances!"
-		sleep 3
 		tmux attach -t ${game_name}
 	else
 		fn_fail "${game_name} is not running."
@@ -129,14 +129,9 @@ install() {
 }
 
 install_sourcemod() {
-	read -p "Download location for MetaMod (eg. http://www.gsptalk.com/mirror/sourcemod/mmsource-1.10.3-linux.tar.gz): " metamod_download
-	read -p "Download location for SourceMod (eg. http://www.gsptalk.com/mirror/sourcemod/sourcemod-1.6.2-linux.tar.gz): " sourcemod_download
-	read -p "Game name (eg. tf, csgo): " game_name
+	read -p "Game name (eg. tf, csgo, css): " game_name
 
-	wget ${metamod_download} -O metamod.tar.gz &> /dev/null
-	wget ${sourcemod_download} -O sourcemod.tar.gz &> /dev/null
-
-	fn_okay "Downloaded MetaMod and SourceMod."
+	download_sourcemod
 
 	tar -zxvf metamod.tar.gz &> /dev/null
 	tar -zxvf sourcemod.tar.gz &> /dev/null
@@ -148,6 +143,21 @@ install_sourcemod() {
 	rm addons/ cfg/ -rf
 
 	fn_okay "Successfully installed MetaMod and SourceMod."
+}
+
+download_sourcemod() {
+	SMPATTERN="http:.*sourcemod-.*-git.*-linux.*"
+	SMURL="http://www.sourcemod.net/smdrop/1.6/"
+	SMPACKAGE=`lynx -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
+
+	MMPATTERN="http:.*mmsource-.*-git.*-linux.*"
+	MMURL="http://sourcemm.net/mmsdrop/1.11/"
+	MMPACKAGE=`lynx -dump "$MMURL" | egrep -o "$MMPATTERN" | tail -1`
+
+	wget ${SMPACKAGE} -O sourcemod.tar.gz &> /dev/null
+	wget ${MMPACKAGE} -O metamod.tar.gz &> /dev/null
+
+	fn_okay "Downloaded Metamod and Sourcemod"
 }
 
 case $1 in
