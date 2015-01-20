@@ -72,17 +72,22 @@ collect_information() {
 	# Ask for a bit of information
 	echo -ne "${BLUE}Game server name:${RESET} "
 	read server_name
+	clear
 	echo -ne "${BLUE}Full path to install the server to (without the trailing slash):${RESET} "
 	read full_path
+	clear
 	echo -ne "${BLUE}Start parameters:${RESET} "
 	read start_params
+	clear
 	echo -ne "${BLUE}App ID of server:${RESET} "
 	read app_id
+	clear
 	echo -ne "${BLUE}Full path to directory containing SteamCMD executable - will be downloaded if it doesn't exist (without the trailing slash):${RESET} "
 	read steamcmd_exec
+	clear
 	echo -ne "${BLUE}Install location: $(pwd)/${RESET}"
 	read install_location
-	echo " "
+	clear
 
 	install
 }
@@ -144,10 +149,9 @@ install() {
 
 	chmod +x ${install_location}
 	echo " "
-	echo "Installation completed"
-	echo "======================"
+	echo "-=> Installation completed"
 	echo " "
-	echo "Run ./${install_location} install to install the server to the correct location."
+	echo "-=> Run ./${install_location} install to install the server to the correct location."
 }
 
 case $1 in
