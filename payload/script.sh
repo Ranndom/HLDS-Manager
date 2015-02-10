@@ -7,9 +7,11 @@
 fn_okay() {
     echo -e "\r\033[K[\e[0;32m  OK  \e[0;39m] $@"
 }
+
 fn_fail() {
 	echo -e "\r\033[K[\e[0;31m FAIL \e[0;39m] $@"
 }
+
 ask_yes_or_no() {
 	read -p "${1}: " answer
 	answer=$(echo $answer | awk '{print tolower($0)}')
@@ -75,7 +77,7 @@ command() {
 	fi
 }
 
-console() {
+attach() {
 	tmuxwc=$(tmux list-sessions 2>&1|grep -v failed|grep -E "^${game_name}:"|wc -l)
 	if [ ${tmuxwc} -eq 1 ]; then
 		fn_okay "Attaching to ${game_name}."
@@ -92,7 +94,7 @@ install() {
 }
 
 install_sourcemod() {
-	read -p "Game name (eg. tf, csgo, css): " game_name
+	read -p "Game folder (eg. tf, csgo, css): " game_name
 
 	download_sourcemod
 
@@ -105,7 +107,7 @@ install_sourcemod() {
 	cp addons/ cfg/ ${srcds_location}/${game_name}/ -rf
 	rm addons/ cfg/ -rf
 
-	fn_okay "Successfully installed MetaMod and SourceMod."
+	fn_okay "Successfully installed MetaMod & SourceMod."
 }
 
 download_sourcemod() {
@@ -144,17 +146,14 @@ case $1 in
 	command)
 		command ${*:2}
 		;;
-	console)
-		console
-		;;
-	install)
-		install
+	attach)
+		attach
 		;;
 	update)
 		stop
 		install
 		;;
 	*)
-		echo "Usage: $0 (start|stop|restart|status|command|console|install|update)"
+		echo "Usage: $0 (start|stop|restart|status|command|attach|update"
 		;;
 esac

@@ -1,16 +1,12 @@
 #!/bin/bash
 
-# Colours.
+# Colour definition.
 GREEN="\e[32m"
 BLUE="\e[34m"
 BLACK="\e[30m"
 RESET="\e[0m"
 
-# Ask yes or no.
-# Parameters:
-# 1: Question to ask.
-# 2: Command to run if yes.
-# 3: Command to run if no.
+# Ask yes or no, repeat function if invalid response.
 ask_yes_or_no() {
 	read -p "${1}: " answer
 	answer=$(echo $answer | awk '{print tolower($0)}')
@@ -43,6 +39,8 @@ start() {
 }
 
 collect_information() {
+	# TODO: Make this look a lot cleaner..
+
 	# Ask for a bit of information
 	echo -ne "${BLUE}Game server name:${RESET} "
 	read server_name
@@ -73,6 +71,7 @@ download() {
 }
 
 install() {
+	# TODO: Make this cleaner.	
 	echo -e "${GREEN}Settings"
 	echo -e "${RESET}==============="
 	echo -e "${BLUE}Server Name:${RESET} ${server_name}"
